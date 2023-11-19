@@ -15,3 +15,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "Gallery with Music"
 include(":app")
+include(":sdk")
+
