@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView
 class GalleryAdapter(private val images: List<Int>) : RecyclerView.Adapter<GalleryAdapter.ViewHolder>() {
 
     override fun getItemCount(): Int {
-        Log.d("chaeypar", images.size.toString())
         return images.size
     }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
