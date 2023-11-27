@@ -19,7 +19,6 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
-
 class GalleryActivity : AppCompatActivity() {
     private lateinit var cameraLauncher: ActivityResultLauncher<Uri?>
     private lateinit var sharedPreferences: SharedPreferences
@@ -71,7 +70,6 @@ class GalleryActivity : AppCompatActivity() {
         }
 
     }
-
     private fun createImage() : Uri? {
         val picCount = sharedPreferences.getInt("picCount", 0)
         val contentValues = ContentValues()
@@ -130,5 +128,4 @@ class GalleryActivity : AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
-
 }
