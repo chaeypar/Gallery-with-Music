@@ -1,14 +1,15 @@
 package com.example.gallerywithmusic
 
-import android.graphics.BitmapFactory
-import android.util.Log
+import android.content.Intent
+import android.net.Uri
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 
-class GalleryAdapter(private val images: List<Int>) : RecyclerView.Adapter<GalleryAdapter.ViewHolder>() {
+class GalleryAdapter(private val images: List<Uri?>) : RecyclerView.Adapter<GalleryAdapter.ViewHolder>() {
 
     override fun getItemCount(): Int {
         return images.size
@@ -19,10 +20,17 @@ class GalleryAdapter(private val images: List<Int>) : RecyclerView.Adapter<Galle
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val imagePath = images[position]
+        val imageUri = images[position]
 
-        val bitmap = BitmapFactory.decodeResource(holder.itemView.context.resources, R.drawable.pencil)
+        val bitmap = MediaStore.Images.Media.getBitmap(holder.itemView.context.contentResolver, imageUri)
         holder.galleryImg.setImageBitmap(bitmap)
+
+        holder.itemView.setOnClickListener {
+            val intent = Intent(holder.itemView.context, DetailActivity::class.java)
+            intent.putExtra("uri", imageUri.toString())
+            holder.itemView.context.startActivity(intent)
+        }
+
     }
 
     inner class ViewHolder(view: View) :RecyclerView.ViewHolder(view){

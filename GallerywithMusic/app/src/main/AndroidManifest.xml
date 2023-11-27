@@ -27,6 +27,9 @@
         <activity
             android:name=".GalleryActivity"
             android:exported="true"/>
+        <activity
+            android:name=".DetailActivity"
+            android:exported="true"/>
     </application>
 
 </manifest>
