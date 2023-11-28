@@ -5,7 +5,11 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.media.ExifInterface
 import android.net.Uri
+import android.graphics.Matrix
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.Menu
@@ -18,6 +22,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import java.io.OutputStream
 
 class GalleryActivity : AppCompatActivity() {
     private lateinit var cameraLauncher: ActivityResultLauncher<Uri?>
@@ -27,7 +32,6 @@ class GalleryActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
         setContentView(R.layout.gallery_recycler)
-
         val permissions = registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) {

@@ -1,10 +1,13 @@
 package com.example.gallerywithmusic
 
 import android.app.Activity
+import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.media.ExifInterface
 import android.net.Uri
+import android.graphics.Matrix
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -15,20 +18,12 @@ import androidx.appcompat.widget.Toolbar
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
-import org.opencv.android.Utils
-import org.opencv.core.Mat
-import org.opencv.core.Size
-import org.opencv.imgproc.Imgproc
-import org.tensorflow.lite.Interpreter
-import org.tensorflow.lite.Tensor
 import java.io.FileInputStream
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
+
 class DetailActivity: AppCompatActivity() {
     private lateinit var cropped : Bitmap
-    private lateinit var segmentationDNN: Interpreter
-    private lateinit var dnnInput : Array<Array<Array<FloatArray>>>
-    private lateinit var dnnOutput: Array<FloatArray>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,10 +37,9 @@ class DetailActivity: AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         val detailView = findViewById<ImageView>(R.id.detail_image)
-        val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, Uri.parse(intent.getStringExtra("uri")))
+        var bitmap = rotate(Uri.parse(intent.getStringExtra("uri")), this)
         detailView.setImageBitmap(bitmap)
 
-        modelSetting()
         detectFace(bitmap)
 
         val chooseButton = findViewById<Button>(R.id.choose_button)
@@ -70,40 +64,29 @@ class DetailActivity: AppCompatActivity() {
 
     }
 
-    private fun modelSetting(){
-        val model_name="fer_model.tflite"
-        val tfliteModel: MappedByteBuffer
-        try {
-            tfliteModel = loadModelFile(this, model_name)
-            val options = Interpreter.Options()
-            options.setNumThreads(8)
-            segmentationDNN = Interpreter(tfliteModel, options)
-        } catch (e:Exception){
-            Log.d("chaeypar", "tflite model not loaded")
-        }
+    private fun rotate(uri: Uri, context: Context): Bitmap {
+        val inputStream1 = context.contentResolver.openInputStream(uri)
+        val inputStream2 = context.contentResolver.openInputStream(uri)
+        val bitmap = BitmapFactory.decodeStream(inputStream1)
+        inputStream1?.close()
 
-        val num_inputs = segmentationDNN.getInputTensorCount();
-        for (i in 0 until num_inputs) {
-            val inputTensor: Tensor = segmentationDNN.getInputTensor(i)
-            val shape = inputTensor.shape()
-            dnnInput = Array(shape[0]) {
-                Array(shape[1]) {
-                    Array(shape[2]) {
-                        FloatArray(shape[3])
-                    }
-                }
-            }
-        }
+        val rotateInterface = ExifInterface(inputStream2!!)
+        val orientation = rotateInterface.getAttributeInt(
+            ExifInterface.TAG_ORIENTATION,
+            ExifInterface.ORIENTATION_NORMAL
+        )
 
-        val num_outputs = segmentationDNN.getOutputTensorCount();
-        for (i in 0 until num_outputs) {
-            val outputTensor: Tensor = segmentationDNN.getOutputTensor(i)
-            val shape = outputTensor.shape()
-            dnnOutput = Array(shape[0]) {
-                FloatArray(shape[1])
-            }
+        val mat = Matrix()
+
+        when (orientation) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> mat.postRotate(90f)
+            ExifInterface.ORIENTATION_ROTATE_180 -> mat.postRotate(180f)
+            ExifInterface.ORIENTATION_ROTATE_270 -> mat.postRotate(270f)
         }
+        inputStream2.close()
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, mat, true)
     }
+
     private fun detectFace(bitmap: Bitmap){
         val option = FaceDetectorOptions.Builder()
             .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
@@ -129,42 +112,12 @@ class DetailActivity: AppCompatActivity() {
                         bounds.width(),
                         bounds.height()
                     )
-                    doInference()
+                    FaceRecognition.doInference(this, cropped)
                 }
             }
             .addOnFailureListener { e ->
                 Log.d("chaeypar", e.toString());
             }
-    }
-
-    private fun doInference(){
-        val dnnInputSize = 48
-        val mat = Mat()
-        Utils.bitmapToMat(cropped, mat)
-
-        val resized = Mat()
-        val size = Size(dnnInputSize / 1.0, dnnInputSize / 1.0)
-        Imgproc.resize(mat, resized, size)
-
-        val grayMat = Mat()
-        Imgproc.cvtColor(mat, grayMat, Imgproc.COLOR_RGB2GRAY)
-
-        for (i in 0 until dnnInputSize) {
-            for (j in 0 until dnnInputSize) {
-                val cur = grayMat.get(i, j)
-                dnnInput[0][i][j][0] = cur[0].toFloat()
-            }
-        }
-        segmentationDNN.run(dnnInput, dnnOutput)
-
-        var maxi:Float = 0f
-        var idx = 0
-        for (i in 0 until 7) {
-            if (dnnOutput[0][i] > maxi) {
-                maxi = dnnOutput[0][i]
-                idx = i
-            }
-        }
     }
 
     private fun loadModelFile(activity: Activity, model_name: String): MappedByteBuffer {

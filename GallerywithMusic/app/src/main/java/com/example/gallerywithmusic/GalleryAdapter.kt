@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 
 class GalleryAdapter(private val images: List<Uri?>) : RecyclerView.Adapter<GalleryAdapter.ViewHolder>() {
     override fun getItemCount(): Int {
@@ -21,8 +22,12 @@ class GalleryAdapter(private val images: List<Uri?>) : RecyclerView.Adapter<Gall
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val imageUri = images[position]
 
-        val bitmap = MediaStore.Images.Media.getBitmap(holder.itemView.context.contentResolver, imageUri)
-        holder.galleryImg.setImageBitmap(bitmap)
+        holder.apply {
+            Glide.with(holder.itemView.context)
+                .load(imageUri)
+                .override(300, 150)
+                .into(holder.galleryImg)
+        }
 
         holder.itemView.setOnClickListener {
             val intent = Intent(holder.itemView.context, DetailActivity::class.java)
