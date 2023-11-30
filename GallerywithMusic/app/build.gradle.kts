@@ -58,4 +58,5 @@ dependencies {
     implementation("org.tensorflow:tensorflow-lite-gpu:2.3.0")
     implementation("org.tensorflow:tensorflow-lite-support:+")
     implementation("org.tensorflow:tensorflow-lite-metadata:0.1.0-rc1")
+    implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0")
 }

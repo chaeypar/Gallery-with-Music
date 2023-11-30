@@ -5,11 +5,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.media.ExifInterface
 import android.net.Uri
-import android.graphics.Matrix
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.Menu
@@ -55,7 +51,6 @@ class GalleryActivity : AppCompatActivity() {
         val galleryToolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(galleryToolbar)
         supportActionBar?.title = "Gallery with Music"
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         val galleryRecycler: RecyclerView = findViewById(R.id.gallery_recycler)
         galleryRecycler.layoutManager= GridLayoutManager(this, 3)
@@ -103,12 +98,6 @@ class GalleryActivity : AppCompatActivity() {
         }
     }
 
-    override fun onSupportNavigateUp(): Boolean {
-        super.onSupportNavigateUp()
-        onBackPressed()
-        return true
-    }
-
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.toolbar_menu, menu)
         return super.onCreateOptionsMenu(menu)
@@ -131,5 +120,10 @@ class GalleryActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        FaceRecognition.destroy()
     }
 }

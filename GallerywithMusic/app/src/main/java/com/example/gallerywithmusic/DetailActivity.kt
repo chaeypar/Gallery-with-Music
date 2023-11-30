@@ -1,6 +1,5 @@
 package com.example.gallerywithmusic
 
-import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -18,9 +17,9 @@ import androidx.appcompat.widget.Toolbar
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
-import java.io.FileInputStream
-import java.nio.MappedByteBuffer
-import java.nio.channels.FileChannel
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 
 class DetailActivity: AppCompatActivity() {
     private lateinit var cropped : Bitmap
@@ -62,6 +61,16 @@ class DetailActivity: AppCompatActivity() {
         }
         chooseButton.visibility = View.GONE
 
+        val youtube: YouTubePlayerView = findViewById(R.id.youtube_screen)
+
+        lifecycle.addObserver(youtube)
+
+        youtube.addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
+            override fun onReady(youTubePlayer: YouTubePlayer) {
+                val videoId = "TBjie1MP5e0"
+                youTubePlayer.loadVideo(videoId, 0f)
+            }
+        })
     }
 
     private fun rotate(uri: Uri, context: Context): Bitmap {
@@ -105,14 +114,22 @@ class DetailActivity: AppCompatActivity() {
                 else {
                     val face = faces[0]
                     val bounds = face.boundingBox
-                    cropped = Bitmap.createBitmap(
-                        bitmap,
-                        bounds.left,
-                        bounds.top,
-                        bounds.width(),
-                        bounds.height()
-                    )
-                    FaceRecognition.doInference(this, cropped)
+                    if (bounds.left >= 0 && bounds.top >= 0
+                        && bounds.width() > 0 && bounds.height() >= 0
+                        && bounds.right <= bitmap.width && bounds.bottom <= bitmap.height) {
+                        cropped = Bitmap.createBitmap(
+                            bitmap,
+                            bounds.left,
+                            bounds.top,
+                            bounds.width(),
+                            bounds.height()
+                        )
+                        FaceRecognition.doInference(this, cropped)
+                    }
+                    else{
+                        val chooseButton = findViewById<Button>(R.id.choose_button)
+                        chooseButton.visibility = View.VISIBLE
+                    }
                 }
             }
             .addOnFailureListener { e ->
@@ -120,20 +137,9 @@ class DetailActivity: AppCompatActivity() {
             }
     }
 
-    private fun loadModelFile(activity: Activity, model_name: String): MappedByteBuffer {
-        val fileDescriptor = activity.assets.openFd(model_name)
-        val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
-        val fileChannel = inputStream.channel
-        val startOffset = fileDescriptor.startOffset
-        val declaredLength = fileDescriptor.declaredLength
-
-        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
-    }
-
     override fun onSupportNavigateUp(): Boolean {
         super.onSupportNavigateUp()
         onBackPressed()
         return true
     }
-
 }

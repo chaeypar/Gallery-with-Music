@@ -18,5 +18,8 @@
         android:text="Choose how you feel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
-
+    <com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
+        android:id="@+id/youtube_screen"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 </LinearLayout>

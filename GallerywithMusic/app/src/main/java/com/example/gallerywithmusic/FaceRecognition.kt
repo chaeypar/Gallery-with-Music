@@ -19,7 +19,7 @@ object FaceRecognition {
     private lateinit var dnnOutput: Array<FloatArray>
 
     private fun modelSetting(context: Context) {
-        val model_name="fer_model.tflite"
+        val model_name="reduced_fer_model.tflite"
         val tfliteModel: MappedByteBuffer
         try {
             tfliteModel = loadModelFile(context, model_name)
@@ -79,11 +79,12 @@ object FaceRecognition {
 
         var maxi: Float = 0f
         var idx = 0
-        for (i in 0 until 7) {
+        for (i in 0 until 4) {
             if (dnnOutput[0][i] > maxi) {
                 maxi = dnnOutput[0][i]
                 idx = i
             }
+            Log.d("chaeypar", i.toString())
             Log.d("chaeypar", dnnOutput[0][i].toString())
         }
     }
