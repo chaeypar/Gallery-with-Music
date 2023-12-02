@@ -24,7 +24,7 @@ class GalleryAdapter(private val images: List<Uri?>) : RecyclerView.Adapter<Gall
         holder.apply {
             Glide.with(holder.itemView.context)
                 .load(imageUri)
-                .override(300, 150)
+                .override(1200, 1000)
                 .into(holder.galleryImg)
         }
 
@@ -33,13 +33,10 @@ class GalleryAdapter(private val images: List<Uri?>) : RecyclerView.Adapter<Gall
             intent.putExtra("uri", imageUri.toString())
             holder.itemView.context.startActivity(intent)
         }
-
     }
 
     inner class ViewHolder(view: View) :RecyclerView.ViewHolder(view){
         val galleryImg: ImageView = itemView.findViewById(R.id.gallery_item)
     }
-
-
 }
 

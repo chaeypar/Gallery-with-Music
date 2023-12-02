@@ -2,8 +2,6 @@ package com.example.gallerywithmusic
 
 import android.content.ContentUris
 import android.content.ContentValues
-import android.content.Context
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
@@ -18,11 +16,11 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import java.io.OutputStream
+import java.text.SimpleDateFormat
+import java.util.Date
 
 class GalleryActivity : AppCompatActivity() {
     private lateinit var cameraLauncher: ActivityResultLauncher<Uri?>
-    private lateinit var sharedPreferences: SharedPreferences
     private var images = mutableListOf<Uri?>()
     private var pictureUri: Uri? = null
     override fun onCreate(savedInstanceState: Bundle?){
@@ -41,9 +39,10 @@ class GalleryActivity : AppCompatActivity() {
 
         if (ContextCompat.checkSelfPermission(this, "android.permission.CAMERA") == PackageManager.PERMISSION_GRANTED
             && ContextCompat.checkSelfPermission(this, "android.permission.WRITE_EXTERNAL_STORAGE") == PackageManager.PERMISSION_GRANTED
-            && ContextCompat.checkSelfPermission(this, "android.permission.READ_EXTERNAL_STORAGE") == PackageManager.PERMISSION_GRANTED){
+            && ContextCompat.checkSelfPermission(this, "android.permission.READ_EXTERNAL_STORAGE") == PackageManager.PERMISSION_GRANTED
+            && ContextCompat.checkSelfPermission(this, "android.permission.INTERNET") == PackageManager.PERMISSION_GRANTED){
         } else {
-            permissions.launch(arrayOf("android.permission.CAMERA", "android.permission.WRITE_EXTERNAL_STORAGE", "android.permission.READ_EXTERNAL_STORAGE"))
+            permissions.launch(arrayOf("android.permission.CAMERA", "android.permission.WRITE_EXTERNAL_STORAGE", "android.permission.READ_EXTERNAL_STORAGE", "android.permission.INTERNET"))
         }
 
         attachImages()
@@ -56,13 +55,10 @@ class GalleryActivity : AppCompatActivity() {
         galleryRecycler.layoutManager= GridLayoutManager(this, 3)
         galleryRecycler.adapter = GalleryAdapter(images)
 
-        sharedPreferences = getSharedPreferences("GallerywithMusic", Context.MODE_PRIVATE)
         cameraLauncher = registerForActivityResult(
             ActivityResultContracts.TakePicture()
         ) {
             if (it){
-                val picCount = sharedPreferences.getInt("picCount", 0)
-                sharedPreferences.edit().putInt("picCount", picCount + 1).apply()
                 images.add(pictureUri)
                 galleryRecycler.adapter?.notifyItemInserted(images.size-1)
             }
@@ -70,9 +66,8 @@ class GalleryActivity : AppCompatActivity() {
 
     }
     private fun createImage() : Uri? {
-        val picCount = sharedPreferences.getInt("picCount", 0)
         val contentValues = ContentValues()
-        contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, "picture_$picCount")
+        contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, SimpleDateFormat("yyyyMMdd_HHmmss").format(Date()))
         contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
         contentValues.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
         contentValues.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/GallerywithMusic")

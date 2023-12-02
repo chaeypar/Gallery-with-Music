@@ -1,6 +1,6 @@
 package com.example.gallerywithmusic
 
-public class Music(private var title: String, private var singer:String, private var id: String)
+public class Music(public var title: String, public var singer:String, public var id: String)
 
 object VideoSerial {
     private var angry = arrayOf<Music>(

@@ -8,9 +8,10 @@ import android.net.Uri
 import android.graphics.Matrix
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -23,12 +24,16 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTube
 
 class DetailActivity: AppCompatActivity() {
     private lateinit var cropped : Bitmap
-
+    private var selected : String ?= null
+    private lateinit var emotions: Array<String>
+    private var youtubeplayer : YouTubePlayer?= null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.picture_main)
 
         System.loadLibrary("opencv_java4")
+
+        emotions = arrayOf("angry", "disgust", "fear", "happy", "neutral", "sad", "surprise")
 
         val galleryToolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(galleryToolbar)
@@ -43,15 +48,21 @@ class DetailActivity: AppCompatActivity() {
 
         val chooseButton = findViewById<Button>(R.id.choose_button)
         chooseButton.setOnClickListener {
-            val emotions = arrayOf("neutral", "sad", "happy", "surprise", "disgust", "fear", "angry")
-            var selected = "neutral"
+            var idx = -1;
             val builder = AlertDialog.Builder(this).run {
                 setTitle("Select how you feel")
                 setSingleChoiceItems(emotions, 0) { dialog, which ->
-                    selected = emotions[which]
+                    idx = which
                 }
                 setPositiveButton("Ok") { dialog, which ->
-
+                    if (idx != -1){
+                        selected = emotions[idx]
+                        setStatus(1)
+                        setVideo()
+                    }
+                    else{
+                        Toast.makeText(this@DetailActivity, "Select how you feel", Toast.LENGTH_SHORT).show()
+                    }
                 }
                 setNegativeButton("Cancel") { dialog, which ->
 
@@ -59,7 +70,6 @@ class DetailActivity: AppCompatActivity() {
                 show()
             }
         }
-        chooseButton.visibility = View.GONE
 
         val youtube: YouTubePlayerView = findViewById(R.id.youtube_screen)
 
@@ -67,10 +77,41 @@ class DetailActivity: AppCompatActivity() {
 
         youtube.addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
             override fun onReady(youTubePlayer: YouTubePlayer) {
-                val videoId = "TBjie1MP5e0"
-                youTubePlayer.loadVideo(videoId, 0f)
+                var item : Music
+                if (selected == null) {
+                    val status = findViewById<TextView>(R.id.status_text)
+                    status.text = getString(R.string.noface)
+                    item = VideoSerial.setMusic("neutral")
+                }
+                else {
+                    item = VideoSerial.setMusic(selected!!)
+                    setStatus(0)
+                }
+                youTubePlayer.loadVideo(item.id, 0f)
+                youtubeplayer = youTubePlayer
             }
         })
+    }
+    private fun setVideo(){
+        val item = VideoSerial.setMusic(selected!!)
+        youtubeplayer?.loadVideo(item.id, 0f)
+    }
+
+    private fun setStatus(stat: Int){
+        val status = findViewById<TextView>(R.id.status_text)
+        val msg = when (stat){
+            0-> "You look"
+            else -> "You may feel"
+        }
+        status.text = when(selected){
+            "angry" -> "$msg angry"
+            "disgust" -> "$msg disgusted"
+            "fear" -> "$msg frightened"
+            "happy" -> "$msg happy"
+            "neutral" -> "$msg neutral"
+            "sad" -> "$msg sad"
+            else -> "$msg surprised"
+        }
     }
 
     private fun rotate(uri: Uri, context: Context): Bitmap {
@@ -107,16 +148,14 @@ class DetailActivity: AppCompatActivity() {
         val detector = FaceDetection.getClient(option)
         val result = detector.process(inputImage)
             .addOnSuccessListener { faces ->
-                if (faces.isEmpty()){
-                    val chooseButton = findViewById<Button>(R.id.choose_button)
-                    chooseButton.visibility = View.VISIBLE
-                }
-                else {
+                if (!faces.isEmpty()){
                     val face = faces[0]
                     val bounds = face.boundingBox
                     if (bounds.left >= 0 && bounds.top >= 0
-                        && bounds.width() > 0 && bounds.height() >= 0
+                        && bounds.width() >= 0 && bounds.height() >= 0
                         && bounds.right <= bitmap.width && bounds.bottom <= bitmap.height) {
+                        val chooseButton = findViewById<Button>(R.id.choose_button)
+                        chooseButton.text = getString(R.string.change_status)
                         cropped = Bitmap.createBitmap(
                             bitmap,
                             bounds.left,
@@ -124,11 +163,8 @@ class DetailActivity: AppCompatActivity() {
                             bounds.width(),
                             bounds.height()
                         )
-                        FaceRecognition.doInference(this, cropped)
-                    }
-                    else{
-                        val chooseButton = findViewById<Button>(R.id.choose_button)
-                        chooseButton.visibility = View.VISIBLE
+                        val idx = FaceRecognition.doInference(this, cropped)
+                        selected = emotions[idx]
                     }
                 }
             }

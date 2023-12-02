@@ -3,7 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:gravity="center_horizontal">
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_height="wrap_content"
@@ -11,11 +12,20 @@
         style="@style/Widget.MaterialComponents.ActionBar.Primary" />
     <ImageView
         android:id="@+id/detail_image"
-        android:layout_width="300dp"
-        android:layout_height="200dp" />
+        android:scaleType="fitCenter"
+        android:layout_width="400dp"
+        android:layout_height="300dp" />
+    <TextView
+        android:layout_marginTop="15dp"
+        android:id="@+id/status_text"
+        android:textSize="30dp"
+        android:textStyle="bold"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
     <Button
         android:id="@+id/choose_button"
-        android:text="Choose how you feel"
+        android:layout_marginBottom="15dp"
+        android:text="@string/choose_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
     <com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
