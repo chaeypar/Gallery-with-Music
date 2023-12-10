@@ -30,9 +30,9 @@ class GalleryActivity : AppCompatActivity() {
             ActivityResultContracts.RequestMultiplePermissions()
         ) {
             if (it.all { permission -> permission.value }) {
-                Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Permissions Granted", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Permissions Denied", Toast.LENGTH_SHORT).show()
                 finish()
             }
         }

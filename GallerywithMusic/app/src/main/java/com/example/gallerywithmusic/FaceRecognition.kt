@@ -19,7 +19,7 @@ object FaceRecognition {
     private lateinit var dnnOutput: Array<FloatArray>
 
     private fun modelSetting(context: Context) {
-        val model_name="fer_model.tflite"
+        val model_name="pruned_fer_model.tflite"
         val tfliteModel: MappedByteBuffer
         try {
             tfliteModel = loadModelFile(context, model_name)
